@@ -14,11 +14,24 @@
                         <field name="distribution_latitude"/>
                         <field name="distribution_longitude"/>
                         <field name="distribution_location_accuracy"/>
-                        <button name="action_capture_gps_location" type="object"
-                                class="btn-secondary" icon="fa-crosshairs"
-                                string="Capture Current Location"
-                                groups="flousflow_distribution_route_base.group_distribution_route_user"
-                                colspan="2"/>
+                        <field name="location_url"
+                               placeholder="Paste a Google Maps / WhatsApp location link..."
+                               groups="flousflow_partner_location.group_location_manager"/>
+                        <!-- Capture/extract actions are the widget buttons
+                             below: they work BEFORE the record is saved, so
+                             a new contact is never blocked by required-field
+                             rules while the GPS flow is what fills the
+                             address in the first place. -->
+                        <!-- partner_* fields mirror distribution_* (sync).
+                             Hidden via CSS (NOT invisible="1"): fields hidden
+                             with invisible are dropped from the editable
+                             record, which breaks the GPS widget's writes.
+                             The class keeps them active but not displayed. -->
+                        <field name="partner_latitude" class="o_hidden_location_helper"/>
+                        <field name="partner_longitude" class="o_hidden_location_helper"/>
+                        <field name="location_updated_at" class="o_hidden_location_helper"/>
+                        <field name="location_updated_by" class="o_hidden_location_helper"/>
+                        <field name="location_can_edit" invisible="1"/>
                     </group>
                     <group>
                         <field name="distribution_geofence_radius"/>
@@ -26,23 +39,25 @@
                         <field name="distribution_location_user_id" readonly="1"/>
                         <field name="distribution_location_source" readonly="1"/>
                     </group>
+                    <field name="location_panel" widget="partner_location_buttons"
+                           nolabel="1" colspan="2"/>
                 </group>
             </xpath>
-            <xpath expr="//div[@name='button_box']" position="inside">
-                <button class="oe_stat_button" type="object"
-                        name="action_capture_gps_location"
-                        icon="fa-crosshairs"
-                        groups="flousflow_distribution_route_base.group_distribution_route_user">
-                    <span>Capture Location</span>
-                </button>
-                <button class="oe_stat_button" type="object"
-                        name="action_open_location"
-                        icon="fa-map-marker"
-                        invisible="not has_distribution_location"
-                        groups="flousflow_distribution_route_base.group_distribution_route_user">
-                    <span>Open Location</span>
-                </button>
-            </xpath>
+            <!-- No type="object" GPS buttons in the button_box: they force a
+                 save before running, which trips required-field rules on new
+                 contacts. The widget buttons handle capture pre-save. -->
+        </field>
+    </record>
+
+    <!-- Remove the standalone 'Customer Location' tab: its content is
+         merged into the Distribution Information tab above, so users work
+         in a single place instead of two overlapping location tabs. -->
+    <record id="view_partner_form_remove_location_tab" model="ir.ui.view">
+        <field name="name">res.partner.form.remove.duplicate.location.tab</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="flousflow_partner_location.view_partner_form_inherit_location"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='location']" position="replace"/>
         </field>
     </record>
 
